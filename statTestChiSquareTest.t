@@ -15,7 +15,7 @@ class StatTestChiSquareTest: StatTestObject
 	range = nil
 
 	// Vector to hold our counts.  Created by the constructor.
-	_buckets = nil
+	_bucket = nil
 
 	// Expectation value.  The theoretically "correct" number of times
 	// each option will be selected, given the number of times we've
@@ -33,8 +33,8 @@ class StatTestChiSquareTest: StatTestObject
 		range = (r ? r : 1);
 
 		// Create our buckets, fill them with zeros.
-		_buckets = new Vector(range);
-		_buckets.fillValue(0, 1, range);
+		_bucket = new Vector(range);
+		_bucket.fillValue(0, 1, range);
 
 		// Compute our "base" expectation value.
 		_ev = new BigNumber(1) / new BigNumber(range);
@@ -46,7 +46,7 @@ class StatTestChiSquareTest: StatTestObject
 
 	// Add a single value to our test.
 	addValue(v, cnt?) {
-		_buckets[(toInteger(v) % _buckets.length) + 1] += 1;
+		_bucket[(toInteger(v) % _bucket.length) + 1] += 1;
 		_n += ((cnt != nil) ? cnt : 1);
 	}
 
@@ -72,8 +72,8 @@ class StatTestChiSquareTest: StatTestObject
 		// expectation value and the observed values.
 		for(i = 1; i <= range; i++) {
 			_debug('bucket <<toString(i)>> count =
-				<<toString(_buckets[i])>>');
-			delta = new BigNumber(_buckets[i]) - ev;
+				<<toString(_bucket[i])>>');
+			delta = new BigNumber(_bucket[i]) - ev;
 			t += (delta * delta) / ev;
 		}
 
