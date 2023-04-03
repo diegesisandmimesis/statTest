@@ -1,14 +1,14 @@
 #charset "us-ascii"
 //
-// sample.t
+// chiSquareTest.t
 // Version 1.0
 // Copyright 2022 Diegesis & Mimesis
 //
-// This is a very simple demonstration "game" for the statTest library.
+// Non-interactive test of the root mean square test.
 //
 // It can be compiled via the included makefile with
 //
-//	# t3make -f makefile.t3m
+//	# t3make -f chiSquareTest.t3m
 //
 // ...or the equivalent, depending on what TADS development environment
 // you're using.
@@ -20,7 +20,7 @@
 #include <en_us.h>
 
 // Test equivalent to flipping a coin.
-class DemoTest: StatTestRMS
+class DemoTest: StatTestChiSquare
 	// These are the outcomes 
 	outcomes = static [ 0, 1 ]
 
@@ -31,7 +31,6 @@ class DemoTest: StatTestRMS
 	// Run a single trial:  flip a coin.
 	pickOutcome() { return(rand(2)); }
 ;
-
 versionInfo: GameID;
 gameMain: GameMainDef
 	newGame() {

@@ -1,14 +1,14 @@
 #charset "us-ascii"
 //
-// sample.t
+// rmsTest.t
 // Version 1.0
 // Copyright 2022 Diegesis & Mimesis
 //
-// This is a very simple demonstration "game" for the statTest library.
+// Non-interactive test of the root mean square test.
 //
 // It can be compiled via the included makefile with
 //
-//	# t3make -f makefile.t3m
+//	# t3make -f rmsTest.t3m
 //
 // ...or the equivalent, depending on what TADS development environment
 // you're using.
@@ -31,7 +31,6 @@ class DemoTest: StatTestRMS
 	// Run a single trial:  flip a coin.
 	pickOutcome() { return(rand(2)); }
 ;
-
 versionInfo: GameID;
 gameMain: GameMainDef
 	newGame() {
