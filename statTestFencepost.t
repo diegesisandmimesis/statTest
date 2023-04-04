@@ -32,15 +32,36 @@ class StatTestFencepost: StatTest
 	// The number of buckets.
 	_bucketLen = nil
 
+	// The bucket to hold generic mismatches.
+	_errorBucket = nil
+
+	useRange = nil
+	_minValue = nil
+	_maxValue = nil
+
 	runTest() {
-		local i, idx;
+		local i, idx, v;
 
 		initTest();
 
-		// We add an extra bucket before and after the "real"
-		// buckets, to hold the out of range low and out of range high
-		// values, respectively.
-		_bucketLen = outcomes.length + 2;
+		if(useRange == true) {
+			_minValue = outcomes.minVal();
+			_maxValue = outcomes.maxVal();
+		}
+
+		// We add one extra bucket before and two extra buckts after
+		// the "real" buckets.  The "before" bucket is to hold out of
+		// range low results and the "after" buckets are to hold
+		// generic unmatched results and out of range high results,
+		// respectively.
+		_bucketLen = outcomes.length + 3;
+
+		// The index for the catchall error bucket.  The out of range
+		// low bucket is always index 1 and the out of range high
+		// bucket index is always the length of the array, so this
+		// is the only one that requires math.  We just save the
+		// value to make it easier to refer to later.
+		_errorBucket = _bucketLen - 1;
 
 		// Initialize the buckets.
 		_bucket = new Vector(_bucketLen);
@@ -48,20 +69,45 @@ class StatTestFencepost: StatTest
 
 		// Run the tests.
 		for(i = 0; i < iterations; i++) {
-			// Figure out which bucket this result goes in.
-			if((idx = outcomes.indexOf(pickOutcome())) == nil)
-				idx = 0;
+			// Get the outcome of a single trial.
+			v = pickOutcome();
 
-			// Add one to the index.  This is because we added
-			// an out of range low bucket to the start of the
-			// list.
-			idx += 1;
+			// Figure out which bucket this result goes in.
+			// If we get a match, we use it, done.  If we
+			// don't get a match, we have some decisions to make.
+			if((idx = outcomes.indexOf(v)) == nil) {
+				// We didn't get a match, so we check to
+				// see if we've been told to use ranges.
+				// If we have, we check the value against
+				// the min and max values, and put the result
+				// in the out of range low or out of range
+				// high bucket if either applies, and fall
+				// back on the catchall error bucket otherwise.
+				if(useRange == true) {
+					if(v < _minValue)
+						idx = 1;
+					else if(v > _maxValue)
+						idx = _bucketLen;
+					else
+						idx = _errorBucket;
+				} else {
+					// We're not using ranges, so
+					// we punt.
+					idx = _errorBucket;
+				}
+			} else {
+				// Add one to the index.  This is because we
+				// added an out of range low bucket to the
+				// start of the list.
+				idx += 1;
+			}
 
 			// Sanity check the index to make sure we've got
 			// a bucket for it.
 			// Anything one or lower is out of range low.
 			if(idx < 1)
 				idx = 1;
+
 			// Anything that goes in the last bucket (or tries
 			// to go higher) is out of range high.
 			if(idx > _bucketLen)
@@ -84,6 +130,7 @@ class StatTestFencepost: StatTest
 		if(_bucket[1] != 0) {
 			err += 1;
 			_error('ERROR:  <<toString(_bucket[1])>>
+				of <<toString(iterations)>>
 				outcomes under value');
 		}
 
@@ -92,12 +139,24 @@ class StatTestFencepost: StatTest
 		if(_bucket[_bucketLen] != 0) {
 			err += 1;
 			_error('ERROR:  <<toString(_bucket[_bucketLen])>>
+				of <<toString(iterations)>>
 				outcomes over value');
+		}
+
+		// The error bucket is for general mismatches, and is generally
+		// where things end up if we're not doing range checks.
+		// Its index is always _bucketLen - 1, but we have a property
+		// to refer to it.
+		if(_bucket[_errorBucket] != 0) {
+			err += 1;
+			_error('ERROR:  <<toString(_bucket[_errorBucket])>>
+				of <<toString(iterations)>>
+				outcome values unmatched');
 		}
 
 		// The other buckets are the "real" values, so if any of
 		// them ARE empty, that's a bug.
-		for(i = 2; i < _bucketLen; i++) {
+		for(i = 2; i < _errorBucket; i++) {
 			if(_bucket[i] != 0) continue;
 			err += 1;
 			_error('ERROR:  bucket <<toString(i - 1)>>
