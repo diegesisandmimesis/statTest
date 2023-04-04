@@ -11,10 +11,13 @@
 class StatTestRuns: StatTest
 	svc = 'StatTestRuns'
 
-	_nUp = nil		// number of times value went up
-	_nDown = nil		// number of times the value went down
-	_n = nil		// total number of runs
-	_ev = nil		// computed expectation value
+	iterations = 10000
+
+	_n1 = nil		// number of times value went up
+	_n2 = nil		// number of times the value went down
+	_n = nil		// sum of _n1 and _n2
+	_R = nil		// total number of runs
+	_mean = nil		// computed mean
 	_variance = nil		// computed variance
 	_value = nil		// computed value
 
@@ -25,91 +28,128 @@ class StatTestRuns: StatTest
 	// absolute value of the critical number.
 	_critical = perInstance(new BigNumber(1.96))
 
+	// Here we map whatever values we get into a coin toss, and then
+	// keep track of how many heads and tails come up, as well as the
+	// total number of "runs".
 	runTest() {
-		local dir, i, lastDir, lastVal, v;
+		local i, l, lastVal, v;
+
+		initTest();
 
 		// Initialize counters
-		_nUp = 0;
-		_nDown = 0;
-		_n = 0;
+		_n1 = 0;
+		_n2 = 0;
+		_R = 0;
 
-		// We're running a total number of tests equal
-		// to interations.  Here we one-off save the first
-		// run to lastVal, because we only care about whether
-		// the value goes up or down.
-		lastVal = pickOutcome();
+		// Pre-compute the magic value that turns a "heads" into
+		// a "tails".
+		l = outcomes.length / 2;
 
-		// This is not a typo.  We want to run (iterations) tests,
-		// but we already did one above, so we don't want to do
-		// for(i = 0; i < iterations; i++) like we would otherwise.
-		for(i = 1; i < iterations; i++) {
-			v = pickOutcome();
+		lastVal = nil;
 
-			// Figure out if the value went up or down.
-			if((dir = ((v >= lastVal) ? 1 : -1)) > 0)
-				_nUp += 1;
-			else
-				_nDown += 1;
+		for(i = 0; i < iterations; i++) {
+			// Get the index of a single result in the
+			// outcomes list.
+			if((v = outcomes.indexOf(pickOutcome())) == nil)
+				continue;
 
-			// Figure out if we're still going the same
-			// direction as the last choice.  If we are, then
-			// we have a run.
-			if((lastDir != nil) && (lastDir != dir))
-				_n += 1;
+			// Check to see if the index of the current result
+			// is in the first or second half of the outcomes
+			// array.  We're basically just turning a pick a
+			// number between one and n choice into a coin toss.
+			if(v < l) {
+				_n1 += 1;		// count this result
+				v = 0;
+			} else {
+				_n2 += 1;		// count this result
+				v = 1;
+			}
 
-			// Remember the current value and direction for
-			// the next time through the loop.
-			lastDir = dir;
+			// If the value of the "coin toss" isn't the same as
+			// it was before, we've got the start of a new "run".
+			if(v != lastVal)
+				_R += 1;
+
+			// Remember the current "coin toss" for the next
+			// iteration.
 			lastVal = v;
 		}
 
+		// Convert our counters to bignums.  Entirely to make it
+		// easier for the computational methods that come later.
+		_R = new BigNumber(_R);
+		_n1 = new BigNumber(_n1);
+		_n2 = new BigNumber(_n2);
+		_n = _n1 + _n2;
 	}
 
+	// Report the results.
 	report() {
 		local z;
 
-		if((z = value()) == 0) {
+		// Number of "heads"
+		_debug('n1 = <<toString(_n1)>>');
+
+		// Number of "tails"
+		_debug('n2 = <<toString(_n2)>>');
+
+		// Number of runs.
+		_debug('R = <<toString(_R)>>');
+
+		// Computed values.
+		_debug('mean = <<toString(mean().roundToDecimal(3))>>');
+		_debug('variance = <<toString(variance().roundToDecimal(3))>>');
+
+		// Get the Wald-Wolfowitz value.
+		if((z = value()) == nil) {
 			_error('ERROR:  failed to compute Z value');
 			return;
 		}
 		_debug('Z = <<toString(z.roundToDecimal(3))>>');
-		_debug('mean = <<toString(mean().roundToDecimal(3))>>');
-		_debug('variance = <<toString(variance().roundToDecimal(3))>>');
+
+		// See if we pass.
 		if(z < critical())
 			_debug('passed');
 		else
 			_error('FAILED');
 	}
 
-	// Get the computed value for our data that we'll compare against
-	// the critical value.
-	value() {
-		if(_value != nil) return(_value);
-		return(_value = ((new BigNumber(_n) - mean()) / variance())
-			.getAbs());
-	}
-
 	// Compute the mean.
 	// This and the computation for the variance are just straight
 	// out of Wald-Wolfowitz.
 	mean() {
-		if(_ev != nil) return(_ev);
-		if(_n == 0) return(0);
-		return(_ev = (new BigNumber(2) * new BigNumber(_nUp)
-			* new BigNumber(_nDown)
-			/ new BigNumber(_n)) + new BigNumber(1));
+		if(_mean != nil) return(_mean);
+		if(_R == 0) return(new BigNumber(0));
+		return(_mean = ((new BigNumber(2) * _n1 * _n2) / _n)
+			+ new BigNumber(1));
 	}
 
 	// Compute the variance.
 	variance() {
 		local ev;
 
-		if(_variance != nil)
-			return(_variance);
-		if((ev = mean()) == 0) return(0);
-		return(_variance = ((ev - new BigNumber(1))
-			* (ev - new BigNumber(2)))
-			/ (new BigNumber(_n) - new BigNumber(1)));
+		if((ev = mean()) == 0) return(new BigNumber(0));
+		if(_n < 2) return(new BigNumber(0));
+		return(_variance =
+			((ev - new BigNumber(1)) * (ev - new BigNumber(2)))
+				/ (_n - new BigNumber(1)));
+	}
+
+	// Get the computed value for our data that we'll compare against
+	// the critical value.
+	value() {
+		local v;
+
+		if(_value != nil) return(_value);
+		v = variance();
+		if(v == 0) return(nil);
+
+		// We computed the variance, but we need the standard
+		// deviation now.
+		v = v.sqrt();
+		//_debug('sigma = <<toString(v)>>');
+
+		return(_value = ((_R - mean()) / v).getAbs());
 	}
 
 	critical() { return(_critical); }

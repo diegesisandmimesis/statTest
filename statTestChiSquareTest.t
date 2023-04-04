@@ -7,12 +7,19 @@
 
 #include <bignum.h>
 
+enum chiSquareLowerTail, chiSquareUpperTail, chiSquareBothTails;
+
 // Simple chi-square test.
 class StatTestChiSquareTest: StatTestObject
 	svc = 'StatTestChiSquareTest'
 
 	// Number of degrees of freedom in the test.
 	range = nil
+
+	// Which tail to check.  By default we only check the upper tail,
+	// because we assume we're going to be doing something like checking
+	// whether or not a given group of numbers looks random.
+	tail = chiSquareUpperTail
 
 	// Vector to hold our counts.  Created by the constructor.
 	_bucket = nil
@@ -85,6 +92,11 @@ class StatTestChiSquareTest: StatTestObject
 		return(v);
 	}
 
+	_checkLowerTail() { return((tail == chiSquareLowerTail)
+		|| (tail == chiSquareBothTails)); }
+	_checkUpperTail() { return((tail == chiSquareUpperTail)
+		|| (tail == chiSquareBothTails)); }
+
 	// Check a computed chi-square value against the critical values
 	// for n = 64, and figure out if we've passed.
 	// We count a "success" as having a chi-square less than *any*
@@ -101,33 +113,39 @@ class StatTestChiSquareTest: StatTestObject
 		_success = nil;
 		r = nil;
 
-		if((cv = _criticalValuesLowerTail[range]) == nil) {
-			_error('no upper tail critical values for
-				<<toString(range)>> degrees of freedom');
-			return('REJECT');
-		}
+		if(_checkLowerTail() == true) {
+			if((cv = _criticalValuesLowerTail[range]) == nil) {
+				_error('no upper tail critical values for
+					<<toString(range)>> degrees of
+					freedom');
+				return('REJECT');
+			}
 
-		_debug('lower tail critical values: <<toString(cv)>>');
+			_debug('lower tail critical values: <<toString(cv)>>');
 
-		for(i = 1; i <= cv.length; i++) {
-			if(chi < cv[i]) {
-				r = _criticalPLower[i];
-				return(r);
+			for(i = 1; i <= cv.length; i++) {
+				if(chi < cv[i]) {
+					r = _criticalPLower[i];
+					return(r);
+				}
 			}
 		}
 
-		if((cv = _criticalValuesUpperTail[range]) == nil) {
-			_error('no upper tail critical values for
-				<<toString(range)>> degrees of freedom');
-			return('REJECT');
-		}
+		if(_checkUpperTail() == true) {
+			if((cv = _criticalValuesUpperTail[range]) == nil) {
+				_error('no upper tail critical values for
+					<<toString(range)>> degrees of
+					freedom');
+				return('REJECT');
+			}
 
-		_debug('upper tail critical values: <<toString(cv)>>');
+			_debug('upper tail critical values: <<toString(cv)>>');
 
-		for(i = 1; i <= cv.length; i++) {
-			if(chi > cv[i]) {
-				r = _criticalPUpper[i];
-				return(r);
+			for(i = 1; i <= cv.length; i++) {
+				if(chi > cv[i]) {
+					r = _criticalPUpper[i];
+					return(r);
+				}
 			}
 		}
 

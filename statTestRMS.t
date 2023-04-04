@@ -22,6 +22,8 @@ class StatTestRMS: StatTest
 	}
 
 	getMean() {
+		if((outcomes == nil) || (outcomes.length < 1)) return(0);
+
 		if(mean != nil) {
 			if(!mean.ofKind(BigNumber))
 				mean = new BigNumber(mean);
@@ -51,16 +53,23 @@ class StatTestRMS: StatTest
 	}
 
 	report() {
-		"Normalized RMS error = <<toString(rms.roundToDecimal(3))>>\n ";
+		if(rms == nil) {
+			_error('ERROR:  failed to compute rms');
+			return;
+		}
+		_debug('normalized RMS error =
+			<<toString(rms.roundToDecimal(3))>>');
 		if(rms < 0.05)
-			"passed\n ";
+			_debug('passed');
 		else
-			"FAILED\n ";
+			_error('FAILED');
 	}
 
 	getNormalizedRMS() {
 		local err, i, m, t;
 
+		if((outcomes == nil) || (outcomes.length < 1))
+			return(nil);
 		m = getMean();
 
 		t = new BigNumber(iterations);
