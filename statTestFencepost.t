@@ -100,7 +100,8 @@ class StatTestFencepost: StatTest
 		for(i = 2; i < _bucketLen; i++) {
 			if(_bucket[i] != 0) continue;
 			err += 1;
-			_error('ERROR:  bucket <<toString(_bucket[i - 1])>>
+			_error('ERROR:  bucket <<toString(i - 1)>>
+				(<<toString(outcomes[i - 1])>>)
 				empty');
 		}
 
