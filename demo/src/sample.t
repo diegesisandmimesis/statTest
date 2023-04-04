@@ -65,15 +65,15 @@ class RunsTestBad: PickANumberFailed, StatTestRuns
 versionInfo: GameID;
 gameMain: GameMainDef
 	_goodTests = static [
-		//RMSTestGood,
-		//FencepostTestGood,
-		//ChiTestGood,
+		RMSTestGood,
+		FencepostTestGood,
+		ChiTestGood,
 		RunsTestGood
 	]
 	_badTests = static [
-		//RMSTestBad,
-		//FencepostTestBad,
-		//ChiTestBad,
+		RMSTestBad,
+		FencepostTestBad,
+		ChiTestBad,
 		RunsTestBad
 	]
 	newGame() {
