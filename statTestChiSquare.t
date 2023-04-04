@@ -17,6 +17,8 @@ class StatTestChiSquare: StatTest
 	runTest() {
 		local i;
 
+		initTest();
+
 		// Most of the chi square logic lives in its own class,
 		// in statTestChiSquareTest.t.
 		_chiSquareTest = new StatTestChiSquareTest(outcomes.length);

@@ -35,6 +35,8 @@ class StatTestFencepost: StatTest
 	runTest() {
 		local i, idx;
 
+		initTest();
+
 		// We add an extra bucket before and after the "real"
 		// buckets, to hold the out of range low and out of range high
 		// values, respectively.
