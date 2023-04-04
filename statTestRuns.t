@@ -57,7 +57,7 @@ class StatTestRuns: StatTest
 			// is in the first or second half of the outcomes
 			// array.  We're basically just turning a pick a
 			// number between one and n choice into a coin toss.
-			if(v < l) {
+			if(v <= l) {
 				_n1 += 1;		// count this result
 				v = 0;
 			} else {

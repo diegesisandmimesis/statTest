@@ -21,6 +21,7 @@
 
 // Test equivalent to flipping a coin.
 class DemoTest: StatTestRuns
+	outcomes = static [ 0, 1 ]
 	// Run a single trial:  flip a coin.
 	pickOutcome() { return(rand(2)); }
 ;
