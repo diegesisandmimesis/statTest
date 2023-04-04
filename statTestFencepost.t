@@ -12,8 +12,8 @@
 // an expected range of values are never generated.  An example of this would
 // be if you were wanting to generate integers between 1 and 10 and used
 // rand(10) to do so.  This will actually generate integers from 0 and 9, so
-// you'd get some values you weren't expecting (the zeros) and you would
-// never get some results you were expecting (the tens).
+// you'd get some values you weren't expecting (all the 0s) and you would
+// never get some results you were expecting (any 10s).
 // Here we just generate a bunch of results, verifying that we get some of
 // every value we are expecting and none of any value we aren't expecting.
 // In theory we could catch this with statistical tests, but if we have
@@ -26,46 +26,83 @@
 class StatTestFencepost: StatTest
 	svc = 'StatTestFencepost'
 
+	// This will be a vector containing our counts.
 	_bucket = nil
+
+	// The number of buckets.
 	_bucketLen = nil
 
 	runTest() {
 		local i, idx;
 
+		// We add an extra bucket before and after the "real"
+		// buckets, to hold the out of range low and out of range high
+		// values, respectively.
 		_bucketLen = outcomes.length + 2;
+
+		// Initialize the buckets.
 		_bucket = new Vector(_bucketLen);
 		_bucket.fillValue(0, 1, _bucketLen);
 
+		// Run the tests.
 		for(i = 0; i < iterations; i++) {
+			// Figure out which bucket this result goes in.
 			if((idx = outcomes.indexOf(pickOutcome())) == nil)
 				idx = 0;
+
+			// Add one to the index.  This is because we added
+			// an out of range low bucket to the start of the
+			// list.
 			idx += 1;
-			if(idx < 1) idx = 1;
-			if(idx > _bucketLen) idx = _bucketLen;
+
+			// Sanity check the index to make sure we've got
+			// a bucket for it.
+			// Anything one or lower is out of range low.
+			if(idx < 1)
+				idx = 1;
+			// Anything that goes in the last bucket (or tries
+			// to go higher) is out of range high.
+			if(idx > _bucketLen)
+				idx = _bucketLen;
+
+			// Add the value to the bucket.
 			_bucket[idx] += 1;
 		}
 	}
 
+	// Output the report.
 	report() {
 		local err, i;
 
+		// We have zero errors so far.
 		err = 0;
+
+		// Bucket 1 is for out of range low values, so if it isn't
+		// empty, that's a bug.
 		if(_bucket[1] != 0) {
 			err += 1;
 			_error('ERROR:  <<toString(_bucket[1])>>
 				outcomes under value');
 		}
+
+		// The last bucket is for out of range high, so if it isn't
+		// empty, that's a bug too.
 		if(_bucket[_bucketLen] != 0) {
 			err += 1;
 			_error('ERROR:  <<toString(_bucket[_bucketLen])>>
 				outcomes over value');
 		}
+
+		// The other buckets are the "real" values, so if any of
+		// them ARE empty, that's a bug.
 		for(i = 2; i < _bucketLen; i++) {
 			if(_bucket[i] != 0) continue;
 			err += 1;
 			_error('ERROR:  bucket <<toString(_bucket[i - 1])>>
 				empty');
 		}
+
+		// Now see how many errors we ran into.
 		if(err == 0)
 			_debug('passed');
 		else

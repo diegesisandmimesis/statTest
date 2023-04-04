@@ -23,7 +23,7 @@
 // Abstract number-picking class we'll use as a mixin for our tests below.
 class PickANumber: object
 	// These are the outcomes 
-	outcomes = List.generate({i: i}, 10)
+	outcomes = perInstance(List.generate({i: i}, 10))
 
 	// Run a single trial:  pick a number between 1 and 10
 	pickOutcome() { return(rand(10) + 1); }

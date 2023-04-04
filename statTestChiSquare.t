@@ -7,21 +7,28 @@
 
 #include <bignum.h>
 
+// Do a chi square goodness of fit test.
 class StatTestChiSquare: StatTest
 	svc = 'StatTestChiSquare'
 
+	// Property that will hold the chi square widget.
 	_chiSquareTest = nil
 
 	runTest() {
 		local i;
 
+		// Most of the chi square logic lives in its own class,
+		// in statTestChiSquareTest.t.
 		_chiSquareTest = new StatTestChiSquareTest(outcomes.length);
+
+		// Add however many trials we've been asked to run.
 		for(i = 0; i < iterations; i++) {
 			_chiSquareTest.addValue(
 				outcomes.indexOf(pickOutcome()));
 		}
 	}
 
+	// Output the results.
 	report() {
 		local v;
 

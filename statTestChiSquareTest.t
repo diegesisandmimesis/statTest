@@ -98,7 +98,7 @@ class StatTestChiSquareTest: StatTestObject
 		|| (tail == chiSquareBothTails)); }
 
 	// Check a computed chi-square value against the critical values
-	// for n = 64, and figure out if we've passed.
+	// for our degrees of freedom, and figure out if we've passed.
 	// We count a "success" as having a chi-square less than *any*
 	// of our critical values, which is...not how we should do things.
 	// But we're really just looking for stupid logical errors, not
@@ -113,6 +113,7 @@ class StatTestChiSquareTest: StatTestObject
 		_success = nil;
 		r = nil;
 
+		// See if we're checking the lower tail critical values.
 		if(_checkLowerTail() == true) {
 			if((cv = _criticalValuesLowerTail[range]) == nil) {
 				_error('no upper tail critical values for
@@ -123,6 +124,8 @@ class StatTestChiSquareTest: StatTestObject
 
 			_debug('lower tail critical values: <<toString(cv)>>');
 
+			// If we're lower than any of the critical values,
+			// fail by returning the p value.
 			for(i = 1; i <= cv.length; i++) {
 				if(chi < cv[i]) {
 					r = _criticalPLower[i];
@@ -131,6 +134,7 @@ class StatTestChiSquareTest: StatTestObject
 			}
 		}
 
+		// See if we're checking the upper tail critical values.
 		if(_checkUpperTail() == true) {
 			if((cv = _criticalValuesUpperTail[range]) == nil) {
 				_error('no upper tail critical values for
@@ -141,6 +145,8 @@ class StatTestChiSquareTest: StatTestObject
 
 			_debug('upper tail critical values: <<toString(cv)>>');
 
+			// If we're higher than any of the critical values,
+			// fail by returning the p value.
 			for(i = 1; i <= cv.length; i++) {
 				if(chi > cv[i]) {
 					r = _criticalPUpper[i];
@@ -154,8 +160,10 @@ class StatTestChiSquareTest: StatTestObject
 		return('accept');
 	}
 
+	// p values for the columns in the lookup tables below.
 	_criticalPLower = static [ 0.10, 0.05, 0.025, 0.01, 0.001 ]
 	_criticalPUpper = static [ 0.90, 0.95, 0.975, 0.99, 0.999 ]
+
 	_criticalValuesLowerTail = static [
 		[ .016, .004, .001, .000, .000 ],
 		[ .211, .103, .051, .020, .002 ],
@@ -258,6 +266,7 @@ class StatTestChiSquareTest: StatTestObject
 		[ 81.449, 77.046, 73.361, 69.230, 61.137 ],
 		[ 82.358, 77.929, 74.222, 70.065, 61.918 ]
 	]
+
 	_criticalValuesUpperTail = static [
 		[ 2.706, 3.841, 5.024, 6.635, 10.828 ],
 		[ 4.605, 5.991, 7.378, 9.210, 13.816 ],
