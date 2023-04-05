@@ -78,8 +78,8 @@ class StatTestChiSquareTest: StatTestObject
 		// We sum up the square of the differences between the
 		// expectation value and the observed values.
 		for(i = 1; i <= range; i++) {
-			_debug('bucket <<toString(i)>> count =
-				<<toString(_bucket[i])>>');
+			//_debug('bucket <<toString(i)>> count =
+				//<<toString(_bucket[i])>>');
 			delta = new BigNumber(_bucket[i]) - ev;
 			t += (delta * delta) / ev;
 		}
@@ -112,6 +112,13 @@ class StatTestChiSquareTest: StatTestObject
 
 		_success = nil;
 		r = nil;
+
+		if((range == nil)
+			|| (range > _criticalValuesLowerTail.length)) {
+			_error('no chi square table for range
+				<<toString(range)>>');
+			return('REJECT');
+		}
 
 		// See if we're checking the lower tail critical values.
 		if(_checkLowerTail() == true) {

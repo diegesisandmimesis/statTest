@@ -37,7 +37,7 @@ class StatTestChiSquare: StatTest
 		v = _chiSquareTest.chiSquare();
 
 		_debug('iterations = <<toString(iterations)>>');
-		_debug('chi square = <<toString(v)>>');
+		_debug('chi square = <<toString(v.roundToDecimal(3))>>');
 		_debug('critical = <<_chiSquareTest.checkCritical(v)>>');
 
 		if(_chiSquareTest._success)
