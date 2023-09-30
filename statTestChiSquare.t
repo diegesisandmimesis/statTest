@@ -40,9 +40,12 @@ class StatTestChiSquare: StatTest
 		_debug('chi square = <<toString(v.roundToDecimal(3))>>');
 		_debug('critical = <<_chiSquareTest.checkCritical(v)>>');
 
-		if(_chiSquareTest._success)
+		if(_chiSquareTest._success) {
 			_debug('success');
-		else
+			return(true);
+		} else {
 			_error('FAILED');
+			return(nil);
+		}
 	}
 ;

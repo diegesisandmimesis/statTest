@@ -165,9 +165,12 @@ class StatTestFencepost: StatTest
 		}
 
 		// Now see how many errors we ran into.
-		if(err == 0)
+		if(err == 0) {
 			_debug('passed');
-		else
+			return(true);
+		} else {
 			_error('FAILED');
+			return(nil);
+		}
 	}
 ;

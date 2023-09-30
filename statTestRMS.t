@@ -31,13 +31,13 @@ class StatTestRMS: StatTest
 
 	// Compute the expected mean.
 	getMean() {
-		if((outcomes == nil) || (outcomes.length < 1)) return(0);
-
 		if(mean != nil) {
 			if(!mean.ofKind(BigNumber))
 				mean = new BigNumber(mean);
 			return(mean);
 		}
+
+		if((outcomes == nil) || (outcomes.length < 1)) return(0);
 		mean = new BigNumber(1.0) / new BigNumber(outcomes.length);
 
 		return(mean);
@@ -84,7 +84,7 @@ class StatTestRMS: StatTest
 		local err, i, m, t;
 
 		// Sanity check ourselves.
-		if((outcomes == nil) || (outcomes.length < 1))
+		if((results == nil) || (results.length < 1))
 			return(nil);
 
 		// Compute the expected mean count for each result.
@@ -99,7 +99,7 @@ class StatTestRMS: StatTest
 		err = new BigNumber(0.0);
 
 		// Go through our result counts.
-		for(i = 1; i <= outcomes.length; i++) {
+		for(i = 1; i <= results.length; i++) {
 			// The right side is the difference between the
 			// observed average and the computed "ideal" average,
 			// squared.
@@ -109,7 +109,7 @@ class StatTestRMS: StatTest
 		}
 
 		// Divide the error by the number of results.
-		err /= new BigNumber(outcomes.length);
+		err /= new BigNumber(results.length);
 
 		// Take the square root.
 		err = err.sqrt();
